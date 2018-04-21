@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import os
 import sys
 import time
 import datetime
@@ -19,6 +20,40 @@ PREFIX = '.'
 CHANNELS = open('ch.txt')
 
 CHANNELS_list = CHANNELS.readlines()
+
+
+def sys_uptime(): #from https://thesmithfam.org/blog/2005/11/19/python-uptime-script/
+    try:
+        f = open("/proc/uptime")
+        contents = f.read().split()
+        f.close()
+    except:
+        return "Cannot open uptime file: /proc/uptime"
+
+    total_seconds = float(contents[0])
+
+    # Helper vars:
+    MINUTE = 60
+    HOUR = MINUTE * 60
+    DAY = HOUR * 24
+
+    # Get the days, hours, etc:
+    days = int(total_seconds / DAY)
+    hours = int((total_seconds % DAY) / HOUR)
+    minutes = int((total_seconds % HOUR) / MINUTE)
+    seconds = int(total_seconds % MINUTE)
+
+    # Build up the pretty string (like this: "N days, N hours, N minutes, N seconds")
+    string = ""
+    if days > 0:
+        string += str(days) + " " + (days == 1 and "day" or "days") + ", "
+    if len(string) > 0 or hours > 0:
+        string += str(hours) + " " + (hours == 1 and "hour" or "hours") + ", "
+    if len(string) > 0 or minutes > 0:
+        string += str(minutes) + " " + (minutes == 1 and "minute" or "minutes") + ", "
+    string += str(seconds) + " " + (seconds == 1 and "second" or "seconds")
+
+    return string
 
 # def isint(n):
 #     try:
@@ -52,10 +87,10 @@ def connect():
 base = open('base.txt')
 Coxy = base.readlines()
 
-def input_msg(s):
-    msg = str(input())
-    if msg:
-        s.send((str('PRIVMSG ' + CHANNEL + ' :' + msg + ' \r\n').encode()))
+# def input_msg(s):
+#     msg = str(input())
+#     if msg:
+#         s.send((str('PRIVMSG ' + CHANNEL + ' :' + msg + ' \r\n').encode()))
 
 def sender_nick_find(data):
     n = 1
@@ -87,6 +122,14 @@ def msg_trim(s, Coxy, number, start, end, data):
         if sys.getsizeof(Coxy[number][end:len(Coxy)].encode()) > 512:
             msg_trim(Coxy, number, end, len(Coxy))
 
+def get_real_msg(data):
+    n = 0
+    for i in range(len(data)):
+        if data[i] == ':':
+            n += 1
+        if data[i] == ':' and n == 2:
+            return data[i+1:]
+
 senders_nick_list = []
 senders_nick_time = []
 senders_boobs_nick_list = []
@@ -96,51 +139,69 @@ last_citations_list = []
 last_citations_time = []
 citations_timer = datetime.timedelta(minutes=15)
 version= 'Ну раз тебе так интересно, умник, то вот я https://github.com/kupp1/Coxy Названий, версий нет.'
-help_str = 'Меня зовут Coxy! Я бот kupp. Пока, единственное что я делаю, это по команде !Coxy пишу различные цитаты доктора Кокса из сериала "Клиника", коих у меня ' + str(len(Coxy))
+help_str = 'Меня зовут Coxy! Я бот kupp. По команду .Coxy вывожу цитаты доктора кокса. По комаде .boobs порадую сиськами'
 threshold = 5 * 60
+
+start_time = datetime.datetime.now()
 
 def loop():
     try:
         global connected
         while connected == True:
             data = s.recv(4096).decode('utf-8', 'ignore')
+            print(data)
             last_ping = time.time()
+            msg = get_real_msg(data)
             if data.find('PING') != -1:
                 s.send(str('PONG ' + data.split()[1] + '\r\n').encode())
+                last_ping = time.time()
             if (time.time() - last_ping) > threshold:
                 connected = False
                 break
-            print(data)
-            help = False
-            if re.search(NICK + '.* hi', data):
-                sender_nick = sender_nick_find(data)
-                sender_ch = sender_ch_find(data)
-                s.send((str('PRIVMSG ' + sender_ch + ' :' + sender_nick + ': Hi! Im ' + NICK + ' \r\n').encode()))
-            if data.find(PREFIX + NICK + 'help') != -1:
-                sender_ch = sender_ch_find(data)
-                help = True
-                s.send((str('PRIVMSG ' + sender_ch + ' :' + help_str + ' \r\n').encode()))
-            if data.find(PREFIX + 'boobs') != -1:
-                sender_nick = sender_nick_find(data)
-                sender_ch = sender_ch_find(data)
-                if delay.delay(senders_boobs_nick_list, senders_boobs_nick_time, send_timer, sender_nick + '_at_' + sender_ch_find(data)) == True:
-                    s.send((str('PRIVMSG ' + sender_ch + ' :' + 'http://media.oboobs.ru/boobs/0' + str(random.randrange(7630)) +'.jpg' + ' \r\n').encode()))
-                else:
-                    s.send((str('NOTICE ' + sender_nick + ' :delay 15 minutes' + ' \r\n').encode()))
-            if (data.find(PREFIX + NICK) != -1) and (help == False):
-                sender_nick = sender_nick_find(data)
-                sender_ch = sender_ch_find(data)
-                if delay.delay(senders_nick_list, senders_nick_time, send_timer, sender_nick + '_at_' + sender_ch) == True:
-                    number = random.randint(0, len(Coxy))
-                    msg_trim(s, Coxy, number, 0, len(Coxy), data)
-                else:
-                    sender_nick = sender_nick_find(data)
-                    s.send((str('NOTICE ' + sender_nick + ' :delay 120 seconds' + ' \r\n').encode()))
-            if data.find(NICK + ' :\x01VERSION\x01') != -1:
-                sender_nick = sender_nick_find(data)
-                s.send(str('NOTICE ' + sender_nick + ' :\x01VERSION ' + version + ' \r\n').encode())
-            if re.search('.* KILL' + NICK, data):
-                join()
+            if msg:
+                help = False
+                uptime = False
+                sys_uptime_b = False
+                if re.search(NICK + '.* hi', msg):
+                    s.send((str('PRIVMSG ' + sender_ch_find(data) + ' :' + sender_nick_find(data) + ': Hi! Im ' + NICK + ' \r\n').encode()))
+                if msg.find(PREFIX + NICK + ' uptime') != -1:
+                    uptime = True
+                    time_diff = datetime.datetime.now() - start_time
+                    seconds = int(time_diff.total_seconds())
+                    minutes = 0
+                    hours = 0
+                    days = 0
+                    if seconds > 60:
+                        minutes = int(seconds // 60)
+                        seconds = int(seconds % 60)
+                    if minutes > 60:
+                        hours = int(minutes // 60)
+                        minutes = int(hours % 60)
+                    if hours > 24:
+                        days = int(hours// 24)
+                        hours = int(hours % 24)
+                    s.send((str('PRIVMSG ' + sender_ch_find(data) + ' :' + sender_nick_find(data) + ': Чукча работает ' + str(days) + ' дней ' + str(hours) + ' часов ' + str(minutes) + ' минут ' + str(seconds) + ' секунд' + ' \r\n').encode()))
+                if msg.find(PREFIX + NICK + ' sys_uptime') != -1:
+                    sys_uptime_b = True
+                    s.send((str('PRIVMSG ' + sender_ch_find(data) + ' :' + sys_uptime() + ' \r\n').encode()))
+                if data.find(PREFIX + NICK + ' help') != -1:
+                    help = True
+                    s.send((str('PRIVMSG ' + sender_ch_find(data) + ' :' + help_str + ' \r\n').encode()))
+                if data.find(PREFIX + 'boobs') != -1:
+                    if delay.delay(senders_boobs_nick_list, senders_boobs_nick_time, send_timer, sender_nick_find(data) + '_at_' + sender_ch_find(data)) == True:
+                        s.send((str('PRIVMSG ' + sender_ch_find(data) + ' :' + 'http://media.oboobs.ru/boobs/0' + str(random.randrange(7630)) +'.jpg' + ' \r\n').encode()))
+                    else:
+                        s.send((str('NOTICE ' + sender_nick_find(data) + ' :delay 120 seconds' + ' \r\n').encode()))
+                if (data.find(PREFIX + NICK) != -1) and (help == False) and (uptime == False) and (sys_uptime_b == False):
+                    if delay.delay(senders_nick_list, senders_nick_time, send_timer, sender_nick_find(data) + '_at_' + sender_ch_find(data)) == True:
+                        number = random.randint(0, len(Coxy))
+                        msg_trim(s, Coxy, number, 0, len(Coxy), data)
+                    else:
+                        s.send((str('NOTICE ' + sender_nick_find(data) + ' :delay 120 seconds' + ' \r\n').encode()))
+                if data.find(NICK + ' :\x01VERSION\x01') != -1:
+                    s.send(str('NOTICE ' + sender_nick_find(data) + ' :\x01VERSION ' + version + ' \r\n').encode())
+                if re.search('.* KILL' + NICK, data):
+                    join()
     except:
         connect()
         loop()
