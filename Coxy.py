@@ -19,7 +19,7 @@ REALNAME = 'kupp bot'
 PREFIX = '.'
 CHANNELS = [
     '#16bits',
-    '#16bit'
+    # '#16bit'
 ]
 
 
@@ -60,6 +60,9 @@ def sys_uptime(): #from https://thesmithfam.org/blog/2005/11/19/python-uptime-sc
 def join(s, channels): #join to channels
     for i in range(len(channels)):
         s.send(('JOIN ' + channels[i] + '\r\n').encode())
+
+def rejoin(s, channel): #func for auto rejoin, get one channel
+    s.send(('JOIN ' + channel + '\r\n').encode())
 
 def connect(): #connect to server
     global connected
@@ -196,8 +199,8 @@ def loop():
                         s.send((str('NOTICE ' + sender_nick_find(data) + ' :delay 120 seconds' + ' \r\n').encode()))
                 if data.find(NICK + ' :\x01VERSION\x01') != -1:
                     s.send(str('NOTICE ' + sender_nick_find(data) + ' :\x01VERSION ' + version + ' \r\n').encode())
-                if re.search('.* KILL' + NICK, data):
-                    join(s, sender_ch_find(data))
+                if re.search('.* KICK .*' + NICK, data):
+                    rejoin(s, sender_ch_find(data))
     except:
         connect()
         join(s, CHANNELS)
