@@ -18,7 +18,7 @@ REALNAME = 'kupp bot'
 
 PREFIX = '.'
 CHANNELS = [
-    '#16bits'
+    '#16bits',
     '#16bit'
 ]
 
