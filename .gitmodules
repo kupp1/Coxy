@@ -1,0 +1,3 @@
+[submodule "kirc"]
+	path = kirc
+	url = https://github.com/kupp1/kirc
