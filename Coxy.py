@@ -5,6 +5,7 @@ import sys
 import time
 import datetime
 import random
+sys.path.insert(0, './kirc')
 import kirc
 from kirc import sock
 import delay
