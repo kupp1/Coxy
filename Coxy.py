@@ -8,6 +8,7 @@ import random
 sys.path.insert(0, './kirc')
 import kirc
 from kirc import sock
+sys.path.insert(0, './libs')
 import delay
 import parsers
 import uptime
@@ -31,7 +32,7 @@ bot_hoster = 'kupp' #nick
 prefix = '.'
 channels = [
     '#16bits',
-    # '#16bit'
+    '#16bit'
 ]
 
 base = open('base.txt')
