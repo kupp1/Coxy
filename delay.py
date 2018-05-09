@@ -19,3 +19,7 @@ def delay(list, time, timer, value):
         list.append(value)
         time.append(datetime.datetime.now())
     return OK
+
+def last_force_del(list, time):
+    del list[len(list) - 1]
+    del time[len(time) - 1]
