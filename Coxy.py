@@ -23,7 +23,7 @@ if pwd_context.verify(password, true_pass_hash[0]) != True:
 
 host = 'irc.run.net'
 port = 6660
-nick = 'Coxy_t'
+nick = 'Coxy'
 username = 'Coxy'
 realname = 'kupp bot'
 
@@ -152,6 +152,9 @@ def loop():
                             except IndexError:
                                 delay.last_force_del(senders_nick_list, senders_nick_time)
                                 kirc.send_notice(sock, kirc.sender_nick_find(data), 'I cant find this in base! Try again!')
+                            except ValueError:
+                                delay.last_force_del(senders_nick_list, senders_nick_time)
+                                kirc.send_notice(sock, kirc.sender_nick_find(data), 'Enter only citation number after command motherfucker!')
                         else:
                             while delay.delay(last_citations_list, last_citations_time, citations_timer, index) != True:
                                 index = random.randint(0, len(Coxy))
