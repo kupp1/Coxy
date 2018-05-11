@@ -48,10 +48,10 @@ send_timer = datetime.timedelta(seconds=120)
 last_citations_list = []
 last_citations_time = []
 citations_timer = datetime.timedelta(minutes=15)
-threshold = 6 * 60
+threshold = 15 * 60
 
 version= 'Coxy v1: https://github.com/kupp1/Coxy | kupp bot'
-help_str = 'My name Coxy! Im ' + bot_hoster + 'bot'
+help_str = 'My name Coxy! Im ' + bot_hoster + ' bot'
 
 
 start_time = datetime.datetime.now()
@@ -97,7 +97,7 @@ def loop():
             if data.find('PING') != -1:
                 sock.send(str('PONG ' + data.split()[1] + '\r\n').encode())
                 last_ping = time.time()
-            if 'last_ping' in locals():
+            if ('last_ping' in locals()) and (len(data) == 0):
                 if (time.time() - last_ping) > threshold:
                     connected = False
                     raise ValueError('Disconnected!')
@@ -162,7 +162,8 @@ def loop():
                     else:
                         kirc.send_notice(sock, kirc.sender_nick_find(data), 'delay 120 seconds')
     except:
-        sock.close()
+        #sock.close()
+        sock.shutdown(sock.SHUT_RDWR)
         time.sleep(4)
         kirc.connect(sock, host, port, nick, username, realname)
         kirc.join(sock, channels)
