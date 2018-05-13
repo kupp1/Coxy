@@ -12,6 +12,7 @@ sys.path.insert(0, './libs')
 import delay
 import parsers
 import uptime
+import dance
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256", "des_crypt"], deprecated="auto")
@@ -88,8 +89,17 @@ def get_bot_uptime():
         hours = int(hours % 24)
     return 'Bot uptime: ' + str(days) + ' days,' + str(hours) + ' hours,' + str(minutes) + ' minutes,' + str(minutes) + ' minutes'
 
+def start_dance(sock, data):
+    kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.dance_1_p())
+    time.sleep(3)
+    kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.dance_2_p())
+    time.sleep(3)
+    kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.dance_3_p(kirc.get_names(sock, kirc.sender_ch_find(data)), nick))
+
+connected = False
 def loop():
     try:
+        sock.send((str('nickserv identify ' + password + ' \r\n').encode()))
         global connected
         while connected == True:
             data = sock.recv(4096).decode('utf-8', 'ignore')
@@ -110,6 +120,7 @@ def loop():
                 kirc.rejoin(sock, kirc.sender_ch_find(data))
             msg = kirc.get_real_privmsg(data)
             command = ''
+            print(msg)
             if msg:
                 command = get_command(msg)
             if command:
@@ -161,26 +172,25 @@ def loop():
                             kirc.send_privmsg(sock, kirc.sender_ch_find(data), Coxy[index])
                     else:
                         kirc.send_notice(sock, kirc.sender_nick_find(data), 'delay 120 seconds')
+                if command == 'dance':
+                    if 'dance_time' in locals():
+                        if datetime.datetime.now() - dance_time >= datetime.timedelta(days=1):
+                            dance_time = datetime.datetime.now()
+                            start_dance(sock, data)
+                        else:
+                            kirc.send_privmsg(sock, kirc.sender_ch_find(data), 'Маэстро приходит один раз в день!')
+                    else:
+                        dance_time = datetime.datetime.now()
+                        start_dance(sock, data)
     except:
-        #sock.close()
         sock.shutdown(sock.SHUT_RDWR)
         time.sleep(4)
-        kirc.connect(sock, host, port, nick, username, realname)
-        kirc.join(sock, channels)
-        loop()
+        if kirc.connect(sock, host, port, nick, username, realname, 60, 3) == True:
+            connected = True
+            kirc.join(sock, channels)
+            loop()
 
-kirc.connect(sock, host, port, nick, username, realname)
-connect_time = time.time()
-coon_threshold = 60
-while True:
-    if time.time() - connect_time > threshold:
-        sys.exit('Problem with connection!')
-    data = sock.recv(4096).decode('utf-8', 'ignore')
-    print(data)
-    if data.find('001') != -1:
-        sock.send((str('nickserv identify ' + password + ' \r\n').encode()))
-        connected = True
-        print('Connection established')
-        kirc.join(sock, channels)
-        loop()
-        break
+if kirc.connect(sock, host, port, nick, username, realname, 60, 3) == True:
+    connected = True
+    kirc.join(sock, channels)
+    loop()
