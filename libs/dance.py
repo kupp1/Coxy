@@ -30,13 +30,35 @@ dance_2 = [
     'Вы готовы дети?! Я вас не слыыышу! Вот так хорошо. Руки в боки и вперед плясать!'
 ]
 
-def dance_1_p():
+top_end = [
+    'Вот. Верхушечка.',
+    'Вам еще учится и учится!',
+    'Надо знать своих героев!',
+    'Надо знать своих танцоров!',
+    'Хочешь попасть? Дождись, когда Маэстро тут будет.',
+    'Легенды…',
+    'Легенды танца!',
+    'Учитесь!'
+]
+
+top_start = [
+    'Покажу вам верхушечку:',
+    'Интересно? Вот вам первые 5:',
+    'Легенды! Они тут:',
+    'Вот! Красавцы:',
+    'Огонь юзеры:',
+    'Cейчас покажется головка!.. списка топ танцоров конечно',
+    'Лучшие танцоры:',
+    'Топ-5 танцоров:'
+]
+
+def get_dance_1():
     return dance_1[random.randint(0, len(dance_1)-1)]
 
-def dance_2_p():
+def get_dance_2():
     return dance_2[random.randint(0, len(dance_2)-1)]
 
-def dance_3_p(names, bot_nick):
+def get_dance_3(names, bot_nick):
     dancer = names[random.randint(0, len(names) - 1)]
     while dancer == bot_nick:
         dancer = names[random.randint(0, len(names) - 1)]
@@ -70,7 +92,15 @@ def write_top_dancers(dancer):
     dances_top = map(lambda x: x + '\n', dances_top)
     dances_top_base_w.writelines(dances_top)
 
-def get_top_dacers(top):
+def get_top_dacers():
     dances_top_base = open('./libs/dances_top.txt')
     dances_top = dances_top_base.readlines()
-    return dances_top[top]
+    for i in range(len(dances_top)):
+        dances_top[i] = dances_top[i][:-1]
+    return dances_top[0:4]
+
+def get_top_start():
+    return top_start[random.randint(0, len(top_start) - 1)]
+
+def get_top_end():
+    return top_end[random.randint(0, len(top_end) - 1)]

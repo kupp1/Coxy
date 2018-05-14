@@ -49,6 +49,9 @@ send_timer = datetime.timedelta(seconds=120)
 last_citations_list = []
 last_citations_time = []
 citations_timer = datetime.timedelta(minutes=15)
+dance_list = []
+dance_time = []
+dance_timer = datetime.timedelta(days=1)
 threshold = 15 * 60
 
 version= 'Coxy v1: https://github.com/kupp1/Coxy | kupp bot'
@@ -90,11 +93,11 @@ def get_bot_uptime():
     return 'Bot uptime: ' + str(days) + ' days,' + str(hours) + ' hours,' + str(minutes) + ' minutes,' + str(minutes) + ' minutes'
 
 def start_dance(sock, data):
-    kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.dance_1_p())
+    kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_dance_1())
     time.sleep(3)
-    kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.dance_2_p())
+    kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_dance_2())
     time.sleep(3)
-    kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.dance_3_p(kirc.get_names(sock, kirc.sender_ch_find(data)), nick))
+    kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_dance_3(kirc.get_names(sock, kirc.sender_ch_find(data)), nick))
 
 connected = False
 def loop():
@@ -167,21 +170,25 @@ def loop():
                                 delay.last_force_del(senders_nick_list, senders_nick_time)
                                 kirc.send_notice(sock, kirc.sender_nick_find(data), 'Enter only citation number after command motherfucker!')
                         else:
-                            while delay.delay(last_citations_list, last_citations_time, citations_timer, index) != True:
+                            while delay.delay(last_citations_list, last_citations_time, citations_timer, index + '_at_' + kirc.sender_ch_find(data)) != True:
                                 index = random.randint(0, len(Coxy))
                             kirc.send_privmsg(sock, kirc.sender_ch_find(data), Coxy[index])
                     else:
                         kirc.send_notice(sock, kirc.sender_nick_find(data), 'delay 120 seconds')
                 if command == 'dance':
-                    if 'dance_time' in locals():
-                        if datetime.datetime.now() - dance_time >= datetime.timedelta(days=1):
-                            dance_time = datetime.datetime.now()
+                    if arg == 'top':
+                        top = dance.get_top_dacers()
+                        kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_top_start())
+                        time.sleep(2)
+                        for i in range(len(top)):
+                            kirc.send_privmsg(sock, kirc.sender_ch_find(data), '\x0302' + top[i].split()[0] + '\x03 : \x0304 ' + top[i].split()[1] + '\x03')
+                        time.sleep(2)
+                        kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_top_end())
+                    else:
+                        if delay.delay(dance_list, dance_time, dance_timer, kirc.sender_ch_find(data)) == True:
                             start_dance(sock, data)
                         else:
                             kirc.send_privmsg(sock, kirc.sender_ch_find(data), 'Маэстро приходит один раз в день!')
-                    else:
-                        dance_time = datetime.datetime.now()
-                        start_dance(sock, data)
     except:
         sock.shutdown(sock.SHUT_RDWR)
         time.sleep(4)
