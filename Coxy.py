@@ -57,7 +57,6 @@ threshold = 15 * 60
 version= 'Coxy v1: https://github.com/kupp1/Coxy | kupp bot'
 help_str = 'My name Coxy! Im ' + bot_hoster + ' bot'
 
-
 start_time = datetime.datetime.now()
 
 arg = ''
@@ -169,8 +168,11 @@ def loop():
                             except ValueError:
                                 delay.last_force_del(senders_nick_list, senders_nick_time)
                                 kirc.send_notice(sock, kirc.sender_nick_find(data), 'Enter only citation number after command motherfucker!')
+                            except TypeError:
+                                delay.last_force_del(senders_nick_list, senders_nick_time)
+                                kirc.send_notice(sock, kirc.sender_nick_find(data), 'Error!!')
                         else:
-                            while delay.delay(last_citations_list, last_citations_time, citations_timer, index + '_at_' + kirc.sender_ch_find(data)) != True:
+                            while delay.delay(last_citations_list, last_citations_time, citations_timer, str(index) + '_at_' + kirc.sender_ch_find(data)) != True:
                                 index = random.randint(0, len(Coxy))
                             kirc.send_privmsg(sock, kirc.sender_ch_find(data), Coxy[index])
                     else:
