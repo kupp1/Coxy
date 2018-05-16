@@ -162,15 +162,15 @@ def loop():
                         if arg:
                             try:
                                 kirc.send_privmsg(sock, kirc.sender_ch_find(data), Coxy[int(arg)])
-                            except IndexError:
-                                delay.last_force_del(senders_nick_list, senders_nick_time)
-                                kirc.send_notice(sock, kirc.sender_nick_find(data), 'I cant find this in base! Try again!')
-                            except ValueError:
+                            # except IndexError:
+                            #     delay.last_force_del(senders_nick_list, senders_nick_time)
+                            #     kirc.send_notice(sock, kirc.sender_nick_find(data), 'I cant find this in base! Try again!')
+                            except:
                                 delay.last_force_del(senders_nick_list, senders_nick_time)
                                 kirc.send_notice(sock, kirc.sender_nick_find(data), 'Enter only citation number after command motherfucker!')
-                            except TypeError:
-                                delay.last_force_del(senders_nick_list, senders_nick_time)
-                                kirc.send_notice(sock, kirc.sender_nick_find(data), 'Error!!')
+                            # except TypeError:
+                            #     delay.last_force_del(senders_nick_list, senders_nick_time)
+                            #     kirc.send_notice(sock, kirc.sender_nick_find(data), 'Error!!')
                         else:
                             while delay.delay(last_citations_list, last_citations_time, citations_timer, str(index) + '_at_' + kirc.sender_ch_find(data)) != True:
                                 index = random.randint(0, len(Coxy))
