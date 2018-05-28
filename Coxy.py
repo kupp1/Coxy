@@ -125,7 +125,7 @@ def loop():
             print(msg)
             if msg:
                 command = get_command(msg)
-            if command:
+            if command and (data.find('PRIVMSG ' + nick) == -1):
                 if command == 'uptime':
                     time_diff = datetime.datetime.now() - start_time
                     seconds = int(time_diff.total_seconds())
@@ -162,15 +162,10 @@ def loop():
                         if arg:
                             try:
                                 kirc.send_privmsg(sock, kirc.sender_ch_find(data), Coxy[int(arg)])
-                            # except IndexError:
-                            #     delay.last_force_del(senders_nick_list, senders_nick_time)
-                            #     kirc.send_notice(sock, kirc.sender_nick_find(data), 'I cant find this in base! Try again!')
                             except:
                                 delay.last_force_del(senders_nick_list, senders_nick_time)
                                 kirc.send_notice(sock, kirc.sender_nick_find(data), 'Enter only citation number after command motherfucker!')
-                            # except TypeError:
-                            #     delay.last_force_del(senders_nick_list, senders_nick_time)
-                            #     kirc.send_notice(sock, kirc.sender_nick_find(data), 'Error!!')
+
                         else:
                             while delay.delay(last_citations_list, last_citations_time, citations_timer, str(index) + '_at_' + kirc.sender_ch_find(data)) != True:
                                 index = random.randint(0, len(Coxy))
@@ -178,19 +173,23 @@ def loop():
                     else:
                         kirc.send_notice(sock, kirc.sender_nick_find(data), 'delay 120 seconds')
                 if command == 'dance':
-                    if arg == 'top':
-                        top = dance.get_top_dacers()
-                        kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_top_start())
-                        time.sleep(2)
-                        for i in range(len(top)):
-                            kirc.send_privmsg(sock, kirc.sender_ch_find(data), '\x0302' + top[i].split()[0] + '\x03 : \x0304 ' + top[i].split()[1] + '\x03')
-                        time.sleep(2)
-                        kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_top_end())
+                    if arg:
+                        if arg == 'top':
+                            top = dance.get_top_dacers()
+                            kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_top_start())
+                            time.sleep(2)
+                            for i in range(len(top)):
+                                kirc.send_privmsg(sock, kirc.sender_ch_find(data), '\x0302' + top[i].split()[0] + '\x03 : \x0304 ' + top[i].split()[1] + '\x03')
+                            time.sleep(2)
+                            kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_top_end())
                     else:
                         if delay.delay(dance_list, dance_time, dance_timer, kirc.sender_ch_find(data)) == True:
                             start_dance(sock, data)
                         else:
                             kirc.send_privmsg(sock, kirc.sender_ch_find(data), 'Маэстро приходит один раз в день!')
+            elif data.find('PRIVMSG ' + nick) != -1:
+                kirc.send_privmsg(sock, kirc.sender_nick_find(data), 'Я в приват только могу по зубам! Не лезь')
+
     except:
         sock.shutdown(sock.SHUT_RDWR)
         time.sleep(4)
