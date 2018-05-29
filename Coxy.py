@@ -175,20 +175,17 @@ def loop():
                 if command == 'dance':
                     if arg:
                         if arg == 'top':
+                            kirc.send_notice(sock, kirc.sender_nick_find(data), 'I send statistics as private message')
                             top = dance.get_top_dacers()
-                            kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_top_start())
-                            time.sleep(2)
+                            kirc.send_privmsg(sock, kirc.sender_nick_find(data), dance.get_top_start())
                             for i in range(len(top)):
-                                kirc.send_privmsg(sock, kirc.sender_ch_find(data), '\x0302' + top[i].split()[0] + '\x03 : \x0304 ' + top[i].split()[1] + '\x03')
-                            time.sleep(2)
-                            kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_top_end())
+                                kirc.send_privmsg(sock, kirc.sender_nick_find(data), '\x0302' + top[i].split()[0] + '\x03 : \x0304 ' + top[i].split()[1] + '\x03')
+                            kirc.send_privmsg(sock, kirc.sender_nick_find(data), dance.get_top_end())
                     else:
                         if delay.delay(dance_list, dance_time, dance_timer, kirc.sender_ch_find(data)) == True:
                             start_dance(sock, data)
                         else:
                             kirc.send_privmsg(sock, kirc.sender_ch_find(data), 'Маэстро приходит один раз в день!')
-            elif data.find('PRIVMSG ' + nick) != -1:
-                kirc.send_privmsg(sock, kirc.sender_nick_find(data), 'Я в приват только могу по зубам! Не лезь')
 
     except:
         sock.shutdown(sock.SHUT_RDWR)
