@@ -18,13 +18,26 @@ from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["pbkdf2_sha256", "des_crypt"], deprecated="auto")
 hash_file = open('hash')
 true_pass_hash = hash_file.readlines()
-password = str(input()) # get password for nickserv
-if pwd_context.verify(password, true_pass_hash[0]) != True:
-    sys.exit('Incorrect password! Try again!') # if the password is incorrect program interrupted
+
+passes = 0
+def pass_check(n):
+    global passes
+    password = str(input()) # get password for nickserv
+    if pwd_context.verify(password, true_pass_hash[0]) != True:
+        if passes < n:
+            print('Incorrect password! Try again!')
+            passes += 1
+            pass_check(n - 1)
+        else:
+            sys.exit(str(n) + ' incorrect password attempts!')
+    else:
+        return password
+
+password = pass_check(3)
 
 host = 'irc.run.net'
 port = 6660
-nick = 'Coxy'
+nick = 'Coxy_t'
 username = 'Coxy'
 realname = 'kupp bot'
 
@@ -33,7 +46,7 @@ bot_hoster = 'kupp' #nick
 prefix = '.'
 channels = [
     '#16bits',
-    '#16bit'
+    # '#16bit'
 ]
 
 base = open('base.txt')
@@ -188,8 +201,7 @@ def loop():
                             kirc.send_privmsg(sock, kirc.sender_ch_find(data), 'Маэстро приходит один раз в день!')
 
     except:
-        sock.shutdown(sock.SHUT_RDWR)
-        time.sleep(4)
+        sock = kirc.reload_sock(sock)
         if kirc.connect(sock, host, port, nick, username, realname, 60, 3) == True:
             connected = True
             kirc.join(sock, channels)
