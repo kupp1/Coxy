@@ -112,7 +112,7 @@ def start_dance(sock, data):
     kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_dance_3(kirc.get_names(sock, kirc.sender_ch_find(data)), nick))
 
 connected = False
-def loop():
+def loop(sock):
     try:
         sock.send((str('nickserv identify ' + password + ' \r\n').encode()))
         global connected
@@ -205,9 +205,9 @@ def loop():
         if kirc.connect(sock, host, port, nick, username, realname, 60, 3) == True:
             connected = True
             kirc.join(sock, channels)
-            loop()
+            loop(sock)
 
 if kirc.connect(sock, host, port, nick, username, realname, 60, 3) == True:
     connected = True
     kirc.join(sock, channels)
-    loop()
+    loop(sock)
