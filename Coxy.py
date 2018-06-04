@@ -1,3 +1,4 @@
+#! /usr/bin/python3
 # -*- coding: utf-8 -*-
 
 import re
@@ -22,6 +23,7 @@ true_pass_hash = hash_file.readlines()
 passes = 0
 def pass_check(n):
     global passes
+    print('Enter password: ', end='')
     password = str(input()) # get password for nickserv
     if pwd_context.verify(password, true_pass_hash[0]) != True:
         if passes < n:
@@ -29,7 +31,7 @@ def pass_check(n):
             passes += 1
             pass_check(n - 1)
         else:
-            sys.exit(str(n) + ' incorrect password attempts!')
+            sys.exit(str(passes+1) + ' incorrect password attempts!')
     else:
         return password
 
@@ -40,6 +42,7 @@ port = 6660 #use utf-8
 nick = 'Coxy'
 username = 'Coxy'
 realname = 'kupp bot'
+quit_msg = 'Я вышел, но это не значит, что я обязательно крашнулся.'
 
 bot_hoster = 'kupp' #nick
 
@@ -104,12 +107,12 @@ def get_bot_uptime():
         hours = int(hours % 24)
     return 'Bot uptime: ' + str(days) + ' days,' + str(hours) + ' hours,' + str(minutes) + ' minutes,' + str(minutes) + ' minutes'
 
-def start_dance(sock, data):
-    kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_dance_1())
+def start_dance(sock, ch):
+    kirc.send_privmsg(sock, ch, dance.get_dance_1())
     time.sleep(3)
-    kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_dance_2())
+    kirc.send_privmsg(sock, ch, dance.get_dance_2())
     time.sleep(3)
-    kirc.send_privmsg(sock, kirc.sender_ch_find(data), dance.get_dance_3(kirc.get_names(sock, kirc.sender_ch_find(data)), nick))
+    kirc.send_privmsg(sock, ch, dance.get_dance_3(kirc.get_names(sock, ch), nick))
 
 def send_dance_top(sock, recipient):
     top = dance.get_top_dacers()
@@ -123,6 +126,13 @@ def privmsg_priv_check(msg):
         return True
     else:
         return False
+
+def bot_start():
+    global connected
+    if kirc.connect(sock, host, port, nick, username, realname, 60, 3) == True:
+        connected = True
+        kirc.join(sock, channels)
+        loop(sock)
 
 connected = False
 def loop(sock):
@@ -192,10 +202,10 @@ def loop(sock):
                     if arg:
                         if arg == 'top':
                             kirc.send_notice(sock, kirc.sender_nick_find(data), 'I send statistics as private message')
-                            send_dance_top(sock, recipient)
+                            send_dance_top(sock, kirc.sender_nick_find(data))
                     else:
                         if delay.delay(dance_list, dance_time, dance_timer, kirc.sender_ch_find(data)) == True:
-                            start_dance(sock, kirc.sender_nick_find(data))
+                            start_dance(sock, kirc.sender_ch_find(data))
                         else:
                             kirc.send_privmsg(sock, kirc.sender_ch_find(data), 'Маэстро приходит один раз в день!')
                 elif (command == 'dance') and (priv == True):
@@ -204,15 +214,12 @@ def loop(sock):
                         send_dance_top(sock, recipient)
                     else:
                         kirc.send_privmsg(sock, kirc.sender_nick_find(data), 'Эта команда только для каналов')
-
+    except KeyboardInterrupt:
+        print('\n')
+        kirc.quit(sock, quit_msg)
+        sys.exit('Interrupt by user')
     except:
         sock = kirc.reload_sock(sock)
-        if kirc.connect(sock, host, port, nick, username, realname, 60, 3) == True:
-            connected = True
-            kirc.join(sock, channels)
-            loop(sock)
+        bot_start()
 
-if kirc.connect(sock, host, port, nick, username, realname, 60, 3) == True:
-    connected = True
-    kirc.join(sock, channels)
-    loop(sock)
+bot_start()
