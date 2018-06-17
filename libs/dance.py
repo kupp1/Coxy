@@ -43,13 +43,13 @@ top_end = [
 
 top_start = [
     'Покажу вам верхушечку:',
-    'Интересно? Вот вам первые 5:',
+    'Интересно? Вот вам первые 10:',
     'Легенды! Они тут:',
     'Вот! Красавцы:',
     'Огонь юзеры:',
     'Cейчас покажется головка!.. списка топ танцоров конечно',
     'Лучшие танцоры:',
-    'Топ-5 танцоров:'
+    'Топ-10 танцоров:'
 ]
 
 def get_dance_1():
@@ -97,7 +97,7 @@ def get_top_dacers():
     dances_top = dances_top_base.readlines()
     for i in range(len(dances_top)):
         dances_top[i] = dances_top[i][:-1]
-    return dances_top[0:4]
+    return dances_top[0:9]
 
 def get_top_start():
     return top_start[random.randint(0, len(top_start) - 1)]
