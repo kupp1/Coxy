@@ -1,4 +1,4 @@
-# bot chose dancer of the day, all strings on russian
+# lib bot chose dancer of the day, all strings on russian
 import random
 
 dances_base = open('./libs/dances_list.txt', 'r')
