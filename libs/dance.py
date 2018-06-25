@@ -1,7 +1,7 @@
 # lib bot chose dancer of the day, all strings on russian
 import random
 
-dances_base = open('./libs/dances_list.txt', 'r')
+dances_base = open('./libs/dances_list.txt', 'r+')
 dances = dances_base.readlines()
 
 dance_1 = [
@@ -53,54 +53,75 @@ top_start = [
 ]
 
 def get_dance_1():
-    return dance_1[random.randint(0, len(dance_1)-1)]
+    try:
+        return dance_1[random.randint(0, len(dance_1)-1)]
+    except:
+        return -1
 
 def get_dance_2():
-    return dance_2[random.randint(0, len(dance_2)-1)]
+    try:
+        return dance_2[random.randint(0, len(dance_2)-1)]
+    except:
+        return -1
 
 def get_dance_3(names, bot_nick):
-    dancer = names[random.randint(0, len(names) - 1)]
-    while dancer == bot_nick:
+    try:
         dancer = names[random.randint(0, len(names) - 1)]
-    dance = dances[random.randint(0, len(dances)-1)][:-1]
-    dance_3 = [
-        'А теперь на танцполе \x0313' + dancer + '\x03 И он пригтовил для нас \x0304' + dance + '\x03',
-        'А зажжет особый человек! \x0312' + dancer + '\x03! Готовься танцевать \x0304' + dance + '\x03!',
-        'Хочешь ты того, \x0303' + dancer + '\x03, или нет, но очередь твоя! Готовься танцевать \x0304' + dance + '\x03!',
-        'Все наше внимание займет \x0313' + dancer + '\x03 с танцем \x0304' + dance + '\x03!',
-        'Еее! Я знаю, \x0313' + dancer + '\x03, ты ждал случая! Танцуй \x0304' + dance + '\x03!',
-        '\x0313' + dancer + '\x03! Dance, dance, dance, как было в книге Мураками! Танцуй нам \x0304' + dance + '\x03!'
-    ]
-    write_top_dancers(dancer)
-    return dance_3[random.randint(0, len(dance_3)-1)]
+        while dancer == bot_nick:
+            dancer = names[random.randint(0, len(names) - 1)]
+        dance = dances[random.randint(0, len(dances)-1)][:-1]
+        dance_3 = [
+            'А теперь на танцполе \x0313' + dancer + '\x03 И он пригтовил для нас \x0304' + dance + '\x03',
+            'А зажжет особый человек! \x0312' + dancer + '\x03! Готовься танцевать \x0304' + dance + '\x03!',
+            'Хочешь ты того, \x0303' + dancer + '\x03, или нет, но очередь твоя! Готовься танцевать \x0304' + dance + '\x03!',
+            'Все наше внимание займет \x0313' + dancer + '\x03 с танцем \x0304' + dance + '\x03!',
+            'Еее! Я знаю, \x0313' + dancer + '\x03, ты ждал случая! Танцуй \x0304' + dance + '\x03!',
+            '\x0313' + dancer + '\x03! Dance, dance, dance, как было в книге Мураками! Танцуй нам \x0304' + dance + '\x03!'
+        ]
+        write_top_dancers(dancer)
+        return dance_3[random.randint(0, len(dance_3)-1)]
+    except:
+        return -1
 
 def write_top_dancers(dancer):
-    dances_top_base = open('./libs/dances_top.txt')
-    dances_top = dances_top_base.readlines()
-    for i in range(len(dances_top)):
-        dances_top[i] = dances_top[i][:-1]
-    new_member = True
-    for i in range(len(dances_top)):
-        if dances_top[i].split()[0] == dancer:
-            new_member = False
-            dances_top[i] = dancer + ' ' + str(int(dances_top[i].split()[1])+1)
-    if new_member == True:
-        dances_top.append(dancer + ' ' + '1')
-    dances_top_base_w = open('./libs/dances_top.txt', 'w')
-    dances_top.sort(key=lambda x: x.split()[1], reverse=True)
-    print(dances_top)
-    dances_top = map(lambda x: x + '\n', dances_top)
-    dances_top_base_w.writelines(dances_top)
+    try:
+        dances_top_base = open('./libs/dances_top.txt')
+        dances_top = dances_top_base.readlines()
+        for i in range(len(dances_top)):
+            dances_top[i] = dances_top[i][:-1]
+        new_member = True
+        for i in range(len(dances_top)):
+            if dances_top[i].split()[0] == dancer:
+                new_member = False
+                dances_top[i] = dancer + ' ' + str(int(dances_top[i].split()[1])+1)
+        if new_member == True:
+            dances_top.append(dancer + ' ' + '1')
+        dances_top_base_w = open('./libs/dances_top.txt', 'w')
+        dances_top.sort(key=lambda x: x.split()[1], reverse=True)
+        print(dances_top)
+        dances_top = map(lambda x: x + '\n', dances_top)
+        dances_top_base_w.writelines(dances_top)
+    except:
+        pass
 
 def get_top_dacers():
-    dances_top_base = open('./libs/dances_top.txt')
-    dances_top = dances_top_base.readlines()
-    for i in range(len(dances_top)):
-        dances_top[i] = dances_top[i][:-1]
-    return dances_top[0:9]
+    try:
+        dances_top_base = open('./libs/dances_top.txt')
+        dances_top = dances_top_base.readlines()
+        for i in range(len(dances_top)):
+            dances_top[i] = dances_top[i][:-1]
+        return dances_top[0:9]
+    except:
+        return -1
 
 def get_top_start():
-    return top_start[random.randint(0, len(top_start) - 1)]
+    try:
+        return top_start[random.randint(0, len(top_start) - 1)]
+    except:
+        return -1
 
 def get_top_end():
-    return top_end[random.randint(0, len(top_end) - 1)]
+    try:
+        return top_end[random.randint(0, len(top_end) - 1)]
+    except:
+        return -1

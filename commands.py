@@ -2,8 +2,11 @@ import datetime
 import time
 import subprocess
 import random
+import urllib.request
+import json
 from libs import parsers
 from libs import dance
+import socket
 
 class irc_command():
     def __init__(self, prefix: str, command: str, pub_use=True, priv_use=True, required_args=0, pub_delay=datetime.timedelta(seconds=120), priv_delay=datetime.timedelta(seconds=0), command_mirror=''):
@@ -110,7 +113,7 @@ class irc_command():
         if self.priv_use:
             if self._isPrivate(msg, self_nick):
                 self.target = irc.sender_nick_find(msg)
-                if self._delay(self.priv_list, self.priv_time, self.priv_delay, self.target):
+                if self._delay(self.priv_list, self.priv_time, self.priv_delay, irc.name + '_' + self.target):
                     return True
                 else:
                     irc.send_notice(self.target, 'delay: ' + self.delay2str(self.priv_delay))
@@ -122,7 +125,7 @@ class irc_command():
             if not(self._isPrivate(msg, self_nick)):
                 self.target = irc.sender_ch_find(msg)
                 nick = irc.sender_nick_find(msg)
-                if self._delay(self.pub_list, self.pub_time, self.pub_delay, self.target + irc.sender_nick_find(msg)):
+                if self._delay(self.pub_list, self.pub_time, self.pub_delay, irc.name + '_' + self.target + '_' + irc.sender_nick_find(msg)):
                     return True
                 else:
                     irc.send_notice(nick, 'delay: ' + self.delay2str(self.pub_delay))
@@ -262,3 +265,65 @@ class help_irc_command(irc_command):
     def req(self, msg: str, irc):
         if self.reply(msg, irc.nick, irc):
             irc.send_privmsg(self.target, self.help_str)
+
+
+class ipinfo_irc_command(irc_command):
+    def __init__(self):
+        super().__init__(prefix='.', command='ipinfo', pub_use=False, priv_delay=datetime.timedelta(minutes=2), required_args=1)
+
+    def get_info(self, adress):
+        try:
+            api = "http://freegeoip.net/json/" + adress
+            result = urllib.request.urlopen(api).read()
+            result = str(result)
+            result = result[2:len(result) - 3]
+            result = json.loads(result)
+
+            info = []
+            info.append("IP: " + result["ip"])
+            info.append("Country Name: " + result["country_name"])
+            info.append("Country Code: " + result["country_code"])
+            info.append("Region Name: " + result["region_name"])
+            info.append("Region Code: " + result["region_code"])
+            info.append("City: " + result["city"])
+            info.append("Zip Code: " + result["zip_code"])
+            info.append("Latitude: " + str(result["latitude"]))
+            info.append("Longitude: " + str(result["longitude"]))
+            info.append("Location link: " + "http://www.openstreetmap.org/#map=11/" + str(result["latitude"]) + "/" + str(
+                result["longitude"]))
+
+            return info
+        except:
+            return -1
+
+    def req(self, msg: str, irc):
+        if self.reply(msg, irc.nick, irc):
+            info = self.get_info(self.args[0])
+            if isinstance(info, list):
+                for i in info:
+                    irc.send_privmsg(self.target, i)
+            else:
+                try:
+                    if self.args[0].find('https://') != -1:
+                        self.args[0] = self.args[0][8:]
+                    if self.args[0].find('http://') != -1:
+                        self.args[0] = self.args[0][7:]
+                    cut = self.args[0].find('/')
+                    if cut != -1:
+                        self.args[0] = self.args[0][:cut]
+                    info = self.get_info(socket.gethostbyname(self.args[0]))
+                    if isinstance(info, list):
+                        for i in info:
+                            irc.send_privmsg(self.target, i)
+                    else:
+                        irc.send_privmsg(self.target, 'error')
+                except:
+                    irc.send_privmsg(self.target, 'error')
+
+class test_irc_command(irc_command):
+    def __init__(self):
+        super().__init__(prefix='.', command='test', pub_use=False, priv_delay=datetime.timedelta(minutes=2), required_args=1)
+
+    def req(self, msg: str, irc):
+        if self.reply(msg, irc.nick, irc):
+            irc.send_privmsg(self.target, str(irc.whois(self.args[0])))

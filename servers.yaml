@@ -1,0 +1,27 @@
+---
+RusNet:
+  name: RusNet
+  host: irc.run.net
+  port: 9996
+  ssl: True
+  encoding: utf-8
+  nick: Coxy
+  username: Coxy
+  realname: kupp bot
+  invisible: True
+  channels:
+    - '#16bits'
+    - '#16bit'
+
+#freenode:
+#  name: freenode
+#  host: orwell.freenode.net
+#  port: 6667
+#  ssl: False
+#  encoding: utf-8
+#  nick: Coxy_t
+#  username: Coxy
+#  realname: kupp bot
+#  invisible: True
+#  channels:
+#    - '###kupp_test'
