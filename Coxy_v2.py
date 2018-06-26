@@ -3,16 +3,16 @@ import re
 import sys
 import time
 import datetime
-from kirc import kirc
-import commands
+from kirc import kirc # https://github.com/kupp1/kirc
+import commands # lib with irc commands
 from passlib.context import CryptContext
 from getpass import getpass
 from threading import Thread
 import traceback
 
 pwd_context = CryptContext(schemes=['pbkdf2_sha256', 'des_crypt'], deprecated='auto') #init cryptography for password checker
-hash_file = open('hash') #open file with sha256 hash for pawwword
-true_pass_hash = hash_file.readlines() #readhash
+hash_file = open('hash') #open file with sha256 hash for password
+true_pass_hash = hash_file.readlines() #read hash
 
 def check_password(password):
     if pwd_context.verify(password, true_pass_hash[0]) != True: #check password with hash
@@ -38,11 +38,11 @@ def get_pass_for_nickserv(attempts):
 password = get_pass_for_nickserv(3)
 print('Password accept')
 
-start_time = datetime.datetime.now()
-timeout = 7 * 60 # server autoping timeout
+start_time = datetime.datetime.now() # bot start time for uptime command
+timeout = 7 * 60 # server autoping timeout in seconds
 
-self_ping_timer = 2 * 60 #timer for sent ping to server
-PONG_timeout = 60 #server timeout to reply on bot ping
+# self_ping_timer = 2 * 60 #timer for sent ping to server
+# PONG_timeout = 60 #server timeout to reply on bot ping
 
 nick = 'Coxy'
 host = 'irc.run.net'
@@ -109,7 +109,7 @@ def loop(irc):
                 # raise Exception('Disconnected!') #generate error if timeout
                 traceback.print_exc()
                 bot_restart()
-                loop()
+                loop(irc)
         # if PONG_wait: #bot waiting reply for selfping if PONG_wait == True
         #     if msg.find('PONG ' + host) == -1:
         #         if time.time() - self_ping_time > PONG_timeout:
@@ -121,11 +121,11 @@ def loop(irc):
         #         irc.send('PING ' + host)
         #         PONG_wait = True
         #         self_ping_time = time.time()
-        if re.search(nick + '.* hi', msg): #test command
-            irc.send_privmsg(irc.sender_ch_find(msg), irc.sender_nick_find(msg) + ': Hi! Im ' + nick)
-        if msg.find(nick + ' :\x01VERSION\x01') != -1: #CTCP VERSION reply
+        if re.search(irc.nick + '.* hi', msg): #test command
+            irc.send_privmsg(irc.sender_ch_find(msg), irc.sender_nick_find(msg) + ': Hi! Im ' + irc.nick)
+        if msg.find(irc.nick + ' :\x01VERSION\x01') != -1: #CTCP VERSION reply
             irc.send_notice(irc.sender_nick_find(msg), '\x01VERSION ' + version)
-        if re.search('.* KICK .*' + nick, msg): #autorejoin
+        if re.search('.* KICK .*' + irc.nick, msg): #autorejoin
             irc.pretty_print('Kick at ' + irc.sender_ch_find(msg))
             irc.join_once(irc.sender_ch_find(msg))
 

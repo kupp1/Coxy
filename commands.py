@@ -27,7 +27,7 @@ class irc_command():
     def get_word_list(self, msg: str):
         return msg.split()
 
-    def _command_find(self, msg: list):
+    def _command_find(self, msg: list): # check commands call
         if msg[0:len(self.prefix) + len(self.command)] == self.prefix + self.command:
             #find [prefix][command]  at the beginning of the message
             return True
@@ -39,7 +39,7 @@ class irc_command():
                 else:
                     return False
 
-    def _isPrivate(self, msg: str, self_nick: str):
+    def _isPrivate(self, msg: str, self_nick: str): #check if msg is private
         if msg.find('PRIVMSG ' + self_nick) != -1:
             return True
         else:
@@ -68,11 +68,11 @@ class irc_command():
         else:
             return True
 
-    def _last_delay_del(self, list, time):
+    def _last_delay_del(self, list, time): #del last delay
         del list[len(list) - 1]
         del time[len(time) - 1]
 
-    def delay2str(self, delay): #convet datetime.timedelta to string
+    def delay2str(self, delay): #convet datetime.timedelta to string, for dalay notice
         seconds = int(delay.total_seconds())
         minutes = 0
         hours = 0
@@ -109,7 +109,7 @@ class irc_command():
                 else:
                     return str(days) + ' days, ' + str(hours) + ' hours, ' + str(minutes) + ' minutes'
 
-    def _call_check(self, msg: str, self_nick: str, irc): #check richt to use on public or in private
+    def _call_check(self, msg: str, self_nick: str, irc): #check right to use on public or on private and delays
         if self.priv_use:
             if self._isPrivate(msg, self_nick):
                 self.target = irc.sender_nick_find(msg)
@@ -134,7 +134,7 @@ class irc_command():
             if not(self._isPrivate(msg, self_nick)):
                 return False
 
-    def _arg_check(self, word_list: list):
+    def _arg_check(self, word_list: list): #check required args
         self.args = word_list[1:]
         if len(self.args) >= self.required_args:
             return True
@@ -178,7 +178,7 @@ class uptime_irc_command(irc_command):
             hours = int(hours % 24)
         return 'Bot uptime: ' + str(days) + ' days, ' + str(hours) + ' hours, ' + str(minutes) + ' minutes'
 
-    def req(self, msg: str, irc):
+    def req(self, msg: str, irc): #main function
         if self.reply(msg, irc.nick, irc):
             irc.send_privmsg(self.target, self.get_bot_uptime(self.bot_start_time))
 
@@ -318,7 +318,16 @@ class ipinfo_irc_command(irc_command):
                     else:
                         irc.send_privmsg(self.target, 'error')
                 except:
-                    irc.send_privmsg(self.target, 'error')
+                    try:
+                        nick_ip = irc.whois(irc.sender_nick_find(msg))['ip']
+                        if nick_ip:
+                            info = self.get_info(nick_ip)
+                            for i in info:
+                                irc.send_privmsg(self.target, i)
+                        else:
+                            irc.send_privmsg(self.target, 'error')
+                    except:
+                        irc.send_privmsg(self.target, 'error')
 
 class test_irc_command(irc_command):
     def __init__(self):
