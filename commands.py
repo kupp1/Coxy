@@ -9,7 +9,9 @@ from libs import dance
 import socket
 
 class irc_command():
-    def __init__(self, prefix: str, command: str, pub_use=True, priv_use=True, required_args=0, pub_delay=datetime.timedelta(seconds=120), priv_delay=datetime.timedelta(seconds=0), command_mirror=''):
+    def __init__(self, prefix: str, command: str, pub_use=True, priv_use=True, required_args=0,
+                 pub_delay=datetime.timedelta(seconds=120), priv_delay=datetime.timedelta(seconds=0),
+                 command_mirror=''):
         self.prefix = prefix
         self.command = command
         self.pub_use = pub_use
@@ -19,33 +21,38 @@ class irc_command():
         self.priv_delay = priv_delay
         self.command_mirror = command_mirror
 
-        self.priv_list =[]
-        self.priv_time = []
-        self.pub_list = []
-        self.pub_time = []
+        if self.priv_use:
+            self.priv_list =[]
+            self.priv_time = []
+        if self.pub_use:
+            self.pub_list = []
+            self.pub_time = []
 
     def get_word_list(self, msg: str):
         return msg.split()
 
-    def _command_find(self, msg: list): # check commands call
-        if msg[0:len(self.prefix) + len(self.command)] == self.prefix + self.command:
-            #find [prefix][command]  at the beginning of the message
-            return True
+    def _command_find(self, msg: str): # check commands call
+        if isinstance(msg, str):
+            if msg[0:len(self.prefix) + len(self.command)] == self.prefix + self.command:
+                # find [prefix][command]  at the beginning of the message
+                return True
+            else:
+                if self.command_mirror:
+                    if msg[0:len(self.prefix) + len(self.command_mirror)] == self.prefix + self.command_mirror:
+                        # if cant find [prefix][command] check [prefix][command_mirror]
+                        return True
+                    else:
+                        return False
         else:
-            if self.command_mirror:
-                if msg[0:len(self.prefix) + len(self.command_mirror)] == self.prefix + self.command_mirror:
-                    #if cant find [prefix][command] check [prefix][command_mirror]
-                    return True
-                else:
-                    return False
+            return False
 
-    def _isPrivate(self, msg: str, self_nick: str): #check if msg is private
+    def _isPrivate(self, msg: str, self_nick: str): # check if msg is private
         if msg.find('PRIVMSG ' + self_nick) != -1:
             return True
         else:
             return False
 
-    def _delay(self, list, time, timer, value): #command use delay
+    def _delay(self, list, time, timer, value): # command use delay
         if str(timer) != '0:00:00':
             new_member = True
             allow = True
@@ -68,11 +75,11 @@ class irc_command():
         else:
             return True
 
-    def _last_delay_del(self, list, time): #del last delay
+    def _last_delay_del(self, list, time): # del last delay
         del list[len(list) - 1]
         del time[len(time) - 1]
 
-    def delay2str(self, delay): #convet datetime.timedelta to string, for dalay notice
+    def delay2str(self, delay): # convert datetime.timedelta to string, for dalay notice
         seconds = int(delay.total_seconds())
         minutes = 0
         hours = 0
@@ -109,7 +116,7 @@ class irc_command():
                 else:
                     return str(days) + ' days, ' + str(hours) + ' hours, ' + str(minutes) + ' minutes'
 
-    def _call_check(self, msg: str, self_nick: str, irc): #check right to use on public or on private and delays
+    def _call_check(self, msg: str, self_nick: str, irc): # check right to use on public or on private and delays
         if self.priv_use:
             if self._isPrivate(msg, self_nick):
                 self.target = irc.sender_nick_find(msg)
@@ -125,7 +132,8 @@ class irc_command():
             if not(self._isPrivate(msg, self_nick)):
                 self.target = irc.sender_ch_find(msg)
                 nick = irc.sender_nick_find(msg)
-                if self._delay(self.pub_list, self.pub_time, self.pub_delay, irc.name + '_' + self.target + '_' + irc.sender_nick_find(msg)):
+                if self._delay(self.pub_list, self.pub_time, self.pub_delay, irc.name + '_' + self.target + '_' +
+                                                                             irc.sender_nick_find(msg)):
                     return True
                 else:
                     irc.send_notice(nick, 'delay: ' + self.delay2str(self.pub_delay))
@@ -134,14 +142,14 @@ class irc_command():
             if not(self._isPrivate(msg, self_nick)):
                 return False
 
-    def _arg_check(self, word_list: list): #check required args
+    def _arg_check(self, word_list: list): # check required args
         self.args = word_list[1:]
         if len(self.args) >= self.required_args:
             return True
         else:
             return False
 
-    def reply(self, msg: str, self_nick: str, irc): #check all
+    def reply(self, msg: str, self_nick: str, irc): # check all
         self.msg_content = irc.get_real_privmsg(msg)
         if self._command_find(self.msg_content):
             msg_content = irc.get_real_privmsg(msg)
@@ -269,7 +277,7 @@ class help_irc_command(irc_command):
 
 class ipinfo_irc_command(irc_command):
     def __init__(self):
-        super().__init__(prefix='.', command='ipinfo', pub_use=False, priv_delay=datetime.timedelta(minutes=2), required_args=1)
+        super().__init__(prefix='.', command='ipinfo', pub_use=False, priv_delay=datetime.timedelta(minutes=2))
 
     def get_info(self, adress):
         try:
@@ -287,10 +295,12 @@ class ipinfo_irc_command(irc_command):
             info.append("Region Code: " + result["region_code"])
             info.append("City: " + result["city"])
             info.append("Zip Code: " + result["zip_code"])
+            info.append("Time Zone: " + result["time_zone"])
             info.append("Latitude: " + str(result["latitude"]))
             info.append("Longitude: " + str(result["longitude"]))
-            info.append("Location link: " + "http://www.openstreetmap.org/#map=11/" + str(result["latitude"]) + "/" + str(
-                result["longitude"]))
+            info.append("Location link: " + "http://www.openstreetmap.org/#map=11/" + str(result["latitude"]) + "/" +
+                        str(result["longitude"]))
+            info.append("Metro code: " + str(result["metro_code"]))
 
             return info
         except:
@@ -298,41 +308,57 @@ class ipinfo_irc_command(irc_command):
 
     def req(self, msg: str, irc):
         if self.reply(msg, irc.nick, irc):
-            info = self.get_info(self.args[0])
-            if isinstance(info, list):
-                for i in info:
-                    irc.send_privmsg(self.target, i)
-            else:
-                try:
-                    if self.args[0].find('https://') != -1:
-                        self.args[0] = self.args[0][8:]
-                    if self.args[0].find('http://') != -1:
-                        self.args[0] = self.args[0][7:]
-                    cut = self.args[0].find('/')
-                    if cut != -1:
-                        self.args[0] = self.args[0][:cut]
-                    info = self.get_info(socket.gethostbyname(self.args[0]))
-                    if isinstance(info, list):
-                        for i in info:
-                            irc.send_privmsg(self.target, i)
-                    else:
-                        irc.send_privmsg(self.target, 'error')
-                except:
+            if len(self.args) != 0:
+                info = self.get_info(self.args[0])
+                if isinstance(info, list):
+                    for i in info:
+                        irc.send_privmsg(self.target, i)
+                else:
                     try:
-                        nick_ip = irc.whois(irc.sender_nick_find(msg))['ip']
+                        if self.args[0].find('https://') != -1:
+                            self.args[0] = self.args[0][8:]
+                        if self.args[0].find('http://') != -1:
+                            self.args[0] = self.args[0][7:]
+                        cut = self.args[0].find('/')
+                        if cut != -1:
+                            self.args[0] = self.args[0][:cut]
+                        info = self.get_info(socket.gethostbyname(self.args[0]))
+                        if isinstance(info, list):
+                            for i in info:
+                                irc.send_privmsg(self.target, i)
+                    except:
+                        nick_ip = socket.gethostbyname(irc.whois(self.args[0])['ip'])
                         if nick_ip:
                             info = self.get_info(nick_ip)
                             for i in info:
                                 irc.send_privmsg(self.target, i)
                         else:
                             irc.send_privmsg(self.target, 'error')
-                    except:
-                        irc.send_privmsg(self.target, 'error')
+            else:
+                nick_ip = socket.gethostbyname(irc.whois(irc.sender_nick_find(msg))['ip'])
+                if nick_ip:
+                    info = self.get_info(nick_ip)
+                    for i in info:
+                        irc.send_privmsg(self.target, i)
+                else:
+                    irc.send_privmsg(self.target, 'error')
 
-class test_irc_command(irc_command):
+class whois_irc_command(irc_command):
     def __init__(self):
-        super().__init__(prefix='.', command='test', pub_use=False, priv_delay=datetime.timedelta(minutes=2), required_args=1)
+        super().__init__(prefix='.', command='whois', pub_use=False, priv_delay=datetime.timedelta(minutes=2), required_args=1)
 
     def req(self, msg: str, irc):
         if self.reply(msg, irc.nick, irc):
             irc.send_privmsg(self.target, str(irc.whois(self.args[0])))
+
+class kitty_irc_command(irc_command):
+    def __init__(self):
+        super().__init__(prefix='.', command='kitty', priv_use=False, required_args=1, command_mirror='киска')
+
+    def req(self, msg: str, irc):
+        if self.reply(msg, irc.nick, irc):
+            action = random.randint(0, 1)
+            if action == 1:
+                irc.send_action(self.target, 'кинул кошечку в ' + self.args[0] + ', та присела ему на ручки и стала мурлыкать')
+            else:
+                irc.send_action(self.target, 'кинул кошечку в ' + self.args[0] + ', та с визгом в него вцепилась')

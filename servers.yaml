@@ -9,19 +9,26 @@ RusNet:
   username: Coxy
   realname: kupp bot
   invisible: True
+  hide_ip: True
+  nick_auth: True
+  nick_auth_str: nickserv identify
   channels:
     - '#16bits'
     - '#16bit'
+    - '#castaneda'
 
-#freenode:
-#  name: freenode
-#  host: orwell.freenode.net
-#  port: 6667
-#  ssl: False
-#  encoding: utf-8
-#  nick: Coxy_t
-#  username: Coxy
-#  realname: kupp bot
-#  invisible: True
-#  channels:
-#    - '###kupp_test'
+freenode:
+  name: freenode
+  host: orwell.freenode.net
+  port: 6667
+  ssl: False
+  encoding: utf-8
+  nick: Coxy_t
+  username: Coxy
+  realname: kupp bot
+  invisible: True
+  hide_ip: True
+  nick_auth: False
+  nick_auth_str:
+  channels:
+    - '###kupp_test'
