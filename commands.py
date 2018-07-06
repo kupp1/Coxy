@@ -278,70 +278,71 @@ class help_irc_command(irc_command):
 class ipinfo_irc_command(irc_command):
     def __init__(self):
         super().__init__(prefix='.', command='ipinfo', pub_use=False, priv_delay=datetime.timedelta(minutes=2))
+        self.token = 'b8a4664c0f93af89b721b697040d5e46'
 
-    def get_info(self, adress):
+    def get_ipinfo(self, adress: str):
         try:
-            api = "http://freegeoip.net/json/" + adress
+            api= 'http://api.ipstack.com/' + adress + '?access_key=' + self.token + '&format=1'
             result = urllib.request.urlopen(api).read()
-            result = str(result)
-            result = result[2:len(result) - 3]
+            result = result.decode()
             result = json.loads(result)
 
-            info = []
-            info.append("IP: " + result["ip"])
-            info.append("Country Name: " + result["country_name"])
-            info.append("Country Code: " + result["country_code"])
-            info.append("Region Name: " + result["region_name"])
-            info.append("Region Code: " + result["region_code"])
-            info.append("City: " + result["city"])
-            info.append("Zip Code: " + result["zip_code"])
-            info.append("Time Zone: " + result["time_zone"])
-            info.append("Latitude: " + str(result["latitude"]))
-            info.append("Longitude: " + str(result["longitude"]))
-            info.append("Location link: " + "http://www.openstreetmap.org/#map=11/" + str(result["latitude"]) + "/" +
-                        str(result["longitude"]))
-            info.append("Metro code: " + str(result["metro_code"]))
-
-            return info
+            return result
         except:
             return -1
+
+    def send_ipinfo(self, irc, info):
+        try:
+            if isinstance(info, dict):
+                if not (info['ip'] is None):
+                    irc.send_privmsg(self.target, 'ip: ' + info['ip'])
+                if not (info['country_name'] is None):
+                    irc.send_privmsg(self.target, 'country: ' + info['country_name'])
+                if not (info['region_name'] is None):
+                    irc.send_privmsg(self.target, 'region: ' + info['region_name'])
+                if not (info['city'] is None):
+                    irc.send_privmsg(self.target, 'city: ' + info['city'])
+                if ( not (info['latitude'] is None )) and ( not (info['longitude'] is None) ):
+                    irc.send_privmsg(self.target, 'location link: ' + 'http://www.openstreetmap.org/#map=11/' +
+                                     str(info['latitude']) + '/' + str(info['longitude']))
+                return 1
+            else:
+                irc.send_privmsg(self.target, 'error1')
+                return -1
+        except:
+            irc.send_privmsg(self.target, 'error2')
 
     def req(self, msg: str, irc):
         if self.reply(msg, irc.nick, irc):
             if len(self.args) != 0:
-                info = self.get_info(self.args[0])
-                if isinstance(info, list):
-                    for i in info:
-                        irc.send_privmsg(self.target, i)
-                else:
-                    try:
-                        if self.args[0].find('https://') != -1:
-                            self.args[0] = self.args[0][8:]
-                        if self.args[0].find('http://') != -1:
-                            self.args[0] = self.args[0][7:]
-                        cut = self.args[0].find('/')
-                        if cut != -1:
-                            self.args[0] = self.args[0][:cut]
-                        info = self.get_info(socket.gethostbyname(self.args[0]))
-                        if isinstance(info, list):
-                            for i in info:
-                                irc.send_privmsg(self.target, i)
-                    except:
-                        nick_ip = socket.gethostbyname(irc.whois(self.args[0])['ip'])
-                        if nick_ip:
-                            info = self.get_info(nick_ip)
-                            for i in info:
-                                irc.send_privmsg(self.target, i)
-                        else:
-                            irc.send_privmsg(self.target, 'error')
+                try:
+                    if self.args[0].find('://') != -1:
+                        self.args[0] = self.args[0][self.args[0].find('://')+3:]
+                    cut = self.args[0].find('/')
+                    if cut != -1:
+                        self.args[0] = self.args[0][:cut]
+                    ip = socket.gethostbyaddr(self.args[0])[2][0]
+                    info = self.get_ipinfo(ip)
+                    self.send_ipinfo(irc, info)
+                except:
+                    nick_ip = irc.whois(self.args[0])['ip']
+                    if nick_ip:
+                        info = self.get_ipinfo(nick_ip)
+                        self.send_ipinfo(irc, info)
+                    else:
+                        irc.send_privmsg(self.target, 'error3')
             else:
-                nick_ip = socket.gethostbyname(irc.whois(irc.sender_nick_find(msg))['ip'])
+                nick_ip = irc.whois(irc.sender_nick_find(msg))['ip']
                 if nick_ip:
-                    info = self.get_info(nick_ip)
-                    for i in info:
-                        irc.send_privmsg(self.target, i)
+                    try:
+                        nick_ip = socket.gethostbyaddr(nick_ip)[2][0]
+                    except:
+                        irc.send_privmsg(self.target, 'error4')
+                    else:
+                        info = self.get_ipinfo(nick_ip)
+                        self.send_ipinfo(irc, info)
                 else:
-                    irc.send_privmsg(self.target, 'error')
+                    irc.send_privmsg(self.target, 'error5')
 
 class whois_irc_command(irc_command):
     def __init__(self):
@@ -357,8 +358,10 @@ class kitty_irc_command(irc_command):
 
     def req(self, msg: str, irc):
         if self.reply(msg, irc.nick, irc):
-            action = random.randint(0, 1)
+            action = random.randint(0, 2)
             if action == 1:
                 irc.send_action(self.target, 'кинул кошечку в ' + self.args[0] + ', та присела ему на ручки и стала мурлыкать')
-            else:
+            elif action == 0:
                 irc.send_action(self.target, 'кинул кошечку в ' + self.args[0] + ', та с визгом в него вцепилась')
+            else:
+                irc.send_action(self.target, 'кинул кошечку в ' + self.args[0] + ', та приземлилась рядом и решила его игнорировать')

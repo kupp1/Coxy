@@ -3,11 +3,9 @@ import re
 import sys
 import time
 import datetime
-from kirc import kirc # https://github.com/kupp1/kirc
-import commands # lib with irc commands
+from __backup__ import commands
 from passlib.context import CryptContext
 from getpass import getpass
-from threading import Thread
 
 pwd_context = CryptContext(schemes=['pbkdf2_sha256', 'des_crypt'], deprecated='auto') #init cryptography for password checker
 hash_file = open('hash') #open file with sha256 hash for password
@@ -56,7 +54,7 @@ for server in servers:  # dynamic create insistence of irc class from kirc with 
          '", realname="' + servers[server]['realname'] + '", encoding="' + servers[server]['encoding'] +
          '", ssl_connect=' + str(servers[server]['ssl']) + ', hide_ip=' + str(servers[server]['hide_ip']) +
          ', nick_auth=' + str(servers[server]['nick_auth']) + ', nick_auth_str="' +
-         servers[server]['nick_auth_str'] + '", nick_pass="' + password +'")')
+         servers[server]['nick_auth_str'] + '", nick_pass="' + password + '")')
 
 # init commands, see main class in commands.py
 # not the best solution
