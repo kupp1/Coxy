@@ -155,7 +155,10 @@ class Irc():
             self.__sock = socket.socket()
 
     def __sock_close(self):
-        self.__sock.shutdown(2)
+        try:
+            self.__sock.shutdown(2)
+        except OSError:
+            pass
 
     def __reload_sock(self):
         self.__sock_close()
@@ -218,7 +221,7 @@ class Irc():
                 self.send('NICK %s' % self._nick)
                 self.send('USER %s 0 * :%s' % (self._username, self._realname))
                 connect_time = time.time()
-                self.__sock.settimeout(self._ping_timeout + 1)
+                self.__sock.settimeout(self._ping_timeout)
                 while True:  # ждем от сервера приветственного сообщения
                     if time.time() - connect_time > connect_timeout:
                         # если сообщение не пришло, то работать не можем
@@ -228,10 +231,12 @@ class Irc():
                         for msg in msgs.split('\r\n'):
                             if msg:
                                 pretty_print(msg.strip())
-                                if Parse(msg).command == '001':  # если пришло
+                                # если пришло
+                                if re.search('^(00[1-9]|372)$', Parse(msg).command):
                                     # то пожалуй все хорошо
                                     pretty_print('Connection established')
                                     connected = True
+                                    break
                     if connected:
                         break
             except IrcConnectionError:
@@ -317,33 +322,34 @@ class Irc():
         except IndexError:
             return ''
 
-    def _privmsg_cut(self, recipient: str, text: str, start: int, end: int):
+    def _cut(self, command: str, recipient: str, text: str, start: int, end: int):
         """Разделяет блинное сообщение на части, т.к. в irc privmsg не может веcить больше 512 байт (514: два на \r\n)"""
-        if sys.getsizeof(('PRIVMSG %s :%s\r\n' % (recipient, text[start:end])).encode()) <= 514:
-            self.send('PRIVMSG %s :%s' % (recipient, text[start:end]))
-            pretty_print('Send privmsg to %s :%s' %
-                         (recipient, text[start:end].strip()))
+        if sys.getsizeof(('%s %s :%s\r\n' % (command, recipient, text[start:end])).encode()) <= 514:
+            self.send('%s %s :%s' % (command, recipient, text[start:end]))
+            pretty_print('Send %s to %s :%s' %
+                         (command.lower(), recipient, text[start:end].strip()))
         else:
-            msg = ('PRIVMSG %s :%s' % (recipient, text[start:end]))
+            msg = ('%s %s :%s' % (command, recipient, text[start:end]))
             while sys.getsizeof(msg.encode()) > 511:
                 end -= 1
-                msg = 'PRIVMSG %s :%s' % (recipient, text[start:end])
+                msg = '%s %s :%s' % (command, recipient, text[start:end])
             self.send(msg)
-            pretty_print('Send privmsg to %s :%s' %
-                         (recipient, text[start:end].strip()))
-            if sys.getsizeof(('PRIVMSG %s :%s\r\n' % (recipient, text[end:len(text)])).encode()) > 514:
-                self._privmsg_cut(recipient, text, end, len(text))
+            pretty_print('Send %s to %s :%s' %
+                         (command.lower(), recipient, text[start:end].strip()))
+            if sys.getsizeof(('%s %s :%s\r\n' % (command, recipient, text[end:len(text)])).encode()) > 514:
+                self._cut(command, recipient, text, end, len(text))
             else:
-                self.send('PRIVMSG %s :%s' % (recipient, text[end:len(text)]))
+                self.send('%s %s :%s' %
+                          (command, recipient, text[end:len(text)]))
                 pretty_print('Send privmsg to %s :%s' %
                              (recipient, text[end:len(text)].strip()))
 
     def send_privmsg(self, recipient: str, text: str):
-        self._privmsg_cut(recipient, text, 0, len(text))
+        self._cut('PRIVMSG', recipient, text, 0, len(text))
 
     def send_notice(self, recipient: str, text: str):
-        self.send('NOTICE %s :%s' % (recipient, text))
-        pretty_print('Send notice to %s :%s' % (recipient, text))
+        if recipient and recipient[0] != '#' and recipient[0] != '&':
+            self._cut('NOTICE', recipient, text, 0, len(text))
 
     def send_action(self, recipient: str, text: str):
         self.send('PRIVMSG %s :\x01ACTION %s\x01' % (recipient, text))
@@ -355,11 +361,18 @@ class Irc():
         content = Parse(msg).content
         ctcp_match = self.ctcp_match.search(content)
         if ctcp_match:
-            print('CTCP')
             ctcp_string = ctcp_match.groups()[0]
+            print("%r" % ctcp_string)
             if self.is_privmsg(msg, private=True):
                 if ctcp_string == 'VERSION':
-                    self.send_notice(Parse(msg).nick, '\x01VERSION kirc v3\x01')
+                    self.send_notice(
+                        Parse(msg).nick, '\x01VERSION kirc https://github.com/kupp1/Coxy\x01')
+                elif ctcp_string == 'TIME':
+                    self.send_notice(
+                        Parse(msg).nick, '\x01TIME %s\x01' % time.strftime("%H:%M:%S"))
+                elif ctcp_string.find('PING ') != -1:
+                    self.send_notice(
+                        Parse(msg).nick, '\x01PING %s\x01' % ctcp_string.split()[1])
 
     def quit(self, quit_msg='Bye!'):
         self.send('QUIT :%s' % quit_msg)
