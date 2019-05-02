@@ -141,7 +141,7 @@ class Irc():
         self.__sock_init()
         self.start_time = time.time()
         # регулярка дли пингов сервера
-        self.ping_match = re.compile('^PING :.*')
+        self.ping_match = re.compile(r'^PING :.*')
         self.ctcp_match = re.compile(r'\x01(.*)\x01')
 
     @property

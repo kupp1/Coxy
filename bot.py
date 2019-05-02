@@ -5,7 +5,7 @@ import irc_format
 import random
 import peewee
 
-ip_match = re.compile('((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))')
+ip_match = re.compile(r'((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))')
 url_match = re.compile(r"""
                 (?:
                   (?:
@@ -57,14 +57,14 @@ url_match = re.compile(r"""
                   [\/?#]\S*
                 )?""", re.X)
 irc_nick_match = re.compile(
-    '^\A[a-zа-я_\-\[\]\\^{}|`][a-zа-я0-9_\-\[\]\\^{}|`]{2,15}$', re.IGNORECASE | re.UNICODE)
+    r'^\A[a-zа-я_\-\[\]\\^{}|`][a-zа-я0-9_\-\[\]\\^{}|`]{2,15}$', re.IGNORECASE | re.UNICODE)
 domain_match = re.compile(
-    '^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$', re.IGNORECASE)
+    r'^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$', re.IGNORECASE)
 
 shrugs = [
-    '┻━┻︵ \(°□°)/ ︵ ┻━┻',
-    '¯\_(ツ)_/¯',
-    '┻━┻︵¯\_(ツ)_/¯︵┻━┻'
+    r'┻━┻︵ \(°□°)/ ︵ ┻━┻',
+    r'¯\_(ツ)_/¯',
+    r'┻━┻︵¯\_(ツ)_/¯︵┻━┻'
 ]
 
 
@@ -145,48 +145,22 @@ def collect_stat(irc: kirc.Irc, msg: str):
 
 def delay2str(delay):
     """convert seconds to pretty string with hours, days and seconds, for delay notice"""
-    seconds = int(delay)
-    minutes = 0
-    hours = 0
-    days = 0
-    if seconds > 60:
-        minutes = int(seconds // 60)
-        seconds = int(seconds % 60)
-    if minutes > 60:
-        hours = int(minutes // 60)
-        minutes = int(minutes % 60)
-    if hours > 24:
-        days = int(hours // 24)
-        hours = int(hours % 24)
-    if days == 0:
-        if hours == 0:
-            if minutes == 0:
-                if seconds == 0:
-                    return '0'
-                else:
-                    return '%s seconds' % str(seconds)
-            else:
-                if seconds == 0:
-                    return '%s minutes' % str(minutes)
-                else:
-                    return '%s minutes, %s seconds' % (str(minutes), str(seconds))
-        else:
-            if minutes == 0:
-                return '%s hours' % str(hours)
-            else:
-                return '%s hours, %s minutes' % (str(hours), str(minutes))
-    else:
-        if hours == 0:
-            if minutes == 0:
-                return '%s days' % str(days)
-            else:
-                return '%s days, %s minutes' % (str(days), str(minutes))
-        else:
-            if minutes == 0:
-                return '%s days, %s hours' % (str(days), str(hours))
-            else:
-                return '%s days, %s hours, %s minutes' % (str(days), str(hours), str(minutes))
-
+    days, delay = divmod(delay, 86400)
+    hours, delay = divmod(delay, 3600)
+    minutes, delay = divmod(delay, 60)
+    seconds = delay
+    ans = ''
+    def check_comma(a):
+        return '%s,' % ans if ans else ans
+    if days:
+        ans = '%d days' % days
+    if hours:
+        ans = '%s %d hours' % (check_comma(ans), hours)
+    if minutes:
+        ans = '%s %d minutes' % (check_comma(ans), minutes)
+    if seconds:
+        ans = '%s %d seconds' % (check_comma(ans), seconds)
+    return ans
 
 def cooldown_answer(cooldowns: dict, timer: int, value: str):
     if timer != 0:  # если кулдаун 0, то и проверять нечего
@@ -204,9 +178,9 @@ def cooldown_answer(cooldowns: dict, timer: int, value: str):
         return True
 
 
-latest_ver = None
-latest_time = None
-latest_ping = None
+latest_ver = []
+latest_time = []
+latest_ping = []
 
 with open('dr_cox_quotes.txt', 'r') as text_file:
     cox_quotes = text_file.readlines()
@@ -304,7 +278,7 @@ class Commands():
                 list(self.commands_info.keys())))
             self.irc.send_notice(
                 self.nick, 'Send [help command] [command] for more information')
-    help_command.regexp = 'help(?:\s+(.+))?'
+    help_command.regexp = r'help(?:\s+(.+))?'
     help_command.pub_cooldown = 5
 
     def test(self):
@@ -315,7 +289,7 @@ class Commands():
         string = self.args[0]
         if string:
             self.irc.send_privmsg(self.recipient, self.args[0].strip())
-    echo.regexp = 'echo(?:\s+(.+))'
+    echo.regexp = r'echo(?:\s+(.+))'
     echo.priv_use = False
     echo.pub_cooldown = 300
 
@@ -342,21 +316,21 @@ class Commands():
         target = self.args[0] or self.nick
         self.irc.send_privmsg(target, '\x01VERSION\x01')
         latest_ver = (self.recipient, time.time(), target)
-    version.regexp = '(?:(?:чоза\S*)|(?:ver(?:sion)?))(?: +(\S+))?'
+    version.regexp = r'(?:(?:чоза\S*)|(?:ver(?:sion)?))(?: +(\S+))?'
 
     def time(self):
         global latest_time
         target = self.args[0] or self.nick
         self.irc.send_privmsg(target, '\x01TIME\x01')
         latest_time = (self.recipient, time.time(), target)
-    time.regexp = '(?:time|время)(?:\s+(\S+)?)?'
+    time.regexp = r'(?:time|время)(?:\s+(\S+)?)?'
 
     def ping(self):
         global latest_ping
         target = self.args[0] or self.nick
         self.irc.send_privmsg(target, '\x01PING %f\x01' % time.time())
         latest_ping = (self.recipient, time.time(), target)
-    ping.regexp = '(?:ping|пинг)(?:\s+(\S+)?)?'
+    ping.regexp = r'(?:ping|пинг)(?:\s+(\S+)?)?'
 
     def Coxy(self):
         global cox_quotes
@@ -377,12 +351,12 @@ class Commands():
             else:
                 return
             self.irc.send_privmsg(self.recipient, cox_quotes[i])
-    Coxy.regexp = 'Coxy(?:\s+(-?\d+)?)?'
+    Coxy.regexp = r'Coxy(?:\s+(-?\d+)?)?'
 
     def whois(self):
         target = self.args[0] or self.nick
         self.irc.send_privmsg(self.recipient, str(whois(self.irc, target)))
-    whois.regexp = 'whois(?:\s+(\S+)?)?'
+    whois.regexp = r'whois(?:\s+(\S+)?)?'
 
     def ip(self):
         """geoip"""
@@ -419,8 +393,7 @@ class Commands():
         info = info.decode()
         info = json.loads(info)
         self.irc.send_privmsg(self.recipient, str(info))
-    ip.regexp = 'ip(?:\s+(\S+)?)?'
-    ip.pub_use = False
+    ip.regexp = r'ip(?:\s+(\S+)?)?'
 
     def kitty(self):
         """Бросание котиками"""
@@ -428,7 +401,7 @@ class Commands():
         target = self.args[0] or self.nick
         self.irc.send_action(self.recipient, 'кинул кошечку в %s, та %s' % (
             target, random.choice(kitty_)))
-    kitty.regexp = '(?:kitty|киска)(?:\s+(\S+)?)?'
+    kitty.regexp = r'(?:kitty|киска)(?:\s+(\S+)?)?'
     kitty.priv_use = False
 
     def slap(self):
@@ -437,14 +410,14 @@ class Commands():
         thing = self.args[1] or 'large trout'
         self.irc.send_action(
             self.recipient, 'slaps %s around a bit with a %s' % (target, thing))
-    slap.regexp = 'slap(?:\s+(\S+)?(?:\s+)?(.+)?)?'
+    slap.regexp = r'slap(?:\s+(\S+)?(?:\s+)?(.+)?)?'
     slap.priv_use = False
 
     def poke(self):
         """Classic poke"""
         target = self.args[0] or self.nick
         self.irc.send_action(self.recipient, 'pokes %s' % target)
-    poke.regexp = 'poke(?:\s+(.+)?)?'
+    poke.regexp = r'poke(?:\s+(.+)?)?'
     poke.priv_use = False
 
     def badum_ts(self):
@@ -459,7 +432,7 @@ class Commands():
         target = self.args[0] or self.nick
         self.irc.send_action(self.recipient, 'Кинул котлетой в %s и %s' % (
             target, random.choice(cutlet_)))
-    cutlet.regexp = '(?:котле\S+|cutle\S+)(?:\s+(.+)?)?'
+    cutlet.regexp = r'(?:котле\S+|cutle\S+)(?:\s+(.+)?)?'
     cutlet.priv_use = False
 
     def hi(self):
@@ -467,17 +440,8 @@ class Commands():
         target = self.args[0] or self.nick
         self.irc.send_action(self.recipient, 'Кинул приветом в %s и %s' % (
             target, random.choice(cutlet_)))
-    hi.regexp = '(?:привет|hi)(?:\s+(.+)?)?'
+    hi.regexp = r'(?:привет|hi)(?:\s+(.+)?)?'
     hi.priv_use = False
-
-    def love(self):
-        global cutlet_
-        target = self.args[0] or self.nick
-        self.irc.send_action(self.recipient, 'Кинул сердечком' + random.choice(['♥', '❤', '❥', '❣','❦','❧','♡', 'ღ'])+ ' в %s и %s' % (
-            target, random.choice(cutlet_)))
-    love.regexp = '(?:love|сердечко)(?:\s+(.+)?)?'
-    love.priv_use = False
-
 
     def tg(self):
         self.irc.send_privmsg(self.recipient, 'https://t.me/sixteen_bits')
@@ -490,15 +454,15 @@ class Commands():
         global udp_
         target = self.args[0] or self.nick
         self.irc.send_action(self.recipient, 'Кинул udp-пакетом в %s… %s' %
-                             (self.args[0], random.choice(udp_)))
-    udp.regexp = 'udp(?:\s+(.+)?)?'
+                             (target, random.choice(udp_)))
+    udp.regexp = r'udp(?:\s+(.+)?)?'
 
     def stat(self):
         target = self.args[0] or self.nick
         try:
             row = Stat.get(Stat.nick == target.lower())
         except peewee.DoesNotExist:
-            irc.send_privmsg(self.recipient, 'No such user')
+            self.irc.send_privmsg(self.recipient, 'No such user')
         else:
             try:
                 wpm = row.words_count / row.msg_count
@@ -509,7 +473,7 @@ class Commands():
                 (target, row.words_count, row.msg_count,
                  row.symbols_count, wpm, row.join_count)
             )
-    stat.regexp = '(?:stat|писямерка)(?:\s+(\S+)?)?'
+    stat.regexp = r'(?:stat|писямерка)(?:\s+(\S+)?)?'
 
     def top_msg(self):
         top = Stat.select().order_by(Stat.msg_count.desc()).limit(5)
@@ -520,7 +484,7 @@ class Commands():
             top[3].nick, top[3].msg_count,
             top[4].nick, top[4].msg_count,
         ))
-    top_msg.regexp = '(?:top5msg|самая_длинная_писька)(\s+)?'
+    top_msg.regexp = r'(?:top5msg|самая_длинная_писька)(\s+)?'
 
     def top_words(self):
         top = Stat.select().order_by(Stat.words_count.desc()).limit(5)
@@ -531,7 +495,7 @@ class Commands():
             top[3].nick, top[3].words_count,
             top[4].nick, top[4].words_count,
         ))
-    top_words.regexp = '(?:top5words|самая_толстая_писька)(\s+)?'
+    top_words.regexp = r'(?:top5words|самая_толстая_писька)(\s+)?'
 
     def top_sym(self):
         top = Stat.select().order_by(Stat.symbols_count.desc()).limit(5)
@@ -542,7 +506,7 @@ class Commands():
             top[3].nick, top[3].symbols_count,
             top[4].nick, top[4].symbols_count,
         ))
-    top_sym.regexp = '(?:top5sym|самая_смачная_писька)(\s+)?'
+    top_sym.regexp = r'(?:top5sym|самая_смачная_писька)(\s+)?'
 
     def top_join(self):
         top = Stat.select().order_by(Stat.join_count.desc()).limit(5)
@@ -553,7 +517,7 @@ class Commands():
             top[3].nick, top[3].join_count,
             top[4].nick, top[4].join_count,
         ))
-    top_join.regexp = '(?:top5join|самая_популярная_писька)(\s+)?'
+    top_join.regexp = r'(?:top5join|самая_популярная_писька)(\s+)?'
 
 
 class Bot():
@@ -621,10 +585,10 @@ class Bot():
                     self.commands_info[command][parameter] = default_parameters['default_%s' % parameter]
             try:
                 self.commands_info[command]['regexp'] = re.compile(
-                    '^%s%s(?:\s+)?$' % (self.prefix, getattr(command_method, 'regexp')))
+                    r'^%s%s(?:\s+)?$' % (self.prefix, getattr(command_method, 'regexp')))
             except AttributeError:
                 self.commands_info[command]['regexp'] = re.compile(
-                    '^%s%s(?:\s+)?$' % (self.prefix, command))
+                    r'^%s%s(?:\s+)?$' % (self.prefix, command))
 
             self.commands_info[command]['pub_cooldown_string'] = delay2str(
                 self.commands_info[command]['pub_cooldown'])
@@ -707,17 +671,17 @@ class Bot():
                 if latest_ver and time.time() - latest_ver[1] < 300 and self.nick == latest_ver[2]:
                     self.irc.send_privmsg(latest_ver[0], '%s VERSION: %s' % (
                         irc_format.IrcTextFormat(latest_ver[2]).bold, text))
-                    latest_ver = None
+                    latest_ver = []
             elif ctcp == 'TIME':
                 if latest_time and time.time() - latest_time[1] < 300 and self.nick == latest_time[2]:
                     self.irc.send_privmsg(latest_time[0], '%s TIME: %s' % (
                         irc_format.IrcTextFormat(latest_time[2]).bold, text))
-                    latest_time = None
+                    latest_time = []
             elif ctcp == 'PING':
                 if latest_ping and time.time() - latest_ping[1] < 300 and self.nick == latest_ping[2]:
                     self.irc.send_privmsg(latest_ping[0], '%s PING: %.3f' % (
                         irc_format.IrcTextFormat(latest_ping[2]).bold, time.time() - latest_ping[1]))
-                    latest_ping = None
+                    latest_ping = []
         command = self.call_search(msg)
         if command:
             if self.right_check(command):

@@ -5,8 +5,8 @@ import time
 
 nick = 'Coxy_t'
 
-irc = kirc.Irc('Rusnet', 'irc.tomsk.net', 6666,
-               nick, 'bot', 'kupp bot', 'utf-8')
+irc = kirc.Irc('Rusnet', 'irc.run.net', 9996,
+               nick, 'bot', 'kupp bot', 'utf-8', ssl_enable=True)
 irc.connect(100, 100000)
 irc.send('MODE %s +x' % nick)
 irc.join('#16bits')
@@ -26,6 +26,7 @@ def main_loop():
                         c.do(msg)
         except KeyboardInterrupt:
             irc.quit('Im part, but it doesnt mean that i crash')
+            sys.exit()
         except kirc.IrcConnectionError:
             irc.reconnect(100, 100000)
             irc.join('#16bits')
