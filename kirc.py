@@ -7,7 +7,7 @@ import socket
 
 def pretty_print(*args, end='\n'):
     """pretty print with timestamp"""
-    print('[' + time.strftime("%H:%M:%S") + ']', *args, end=end)
+    print( '[%s]' % time.strftime("%H:%M:%S"), *args, end=end)
 
 
 RFC2812 = re.compile(r""" # Оригинальная регулярка взята с https://gist.github.com/datagrok/380449c30fd0c5cf2f30
@@ -20,7 +20,7 @@ RFC2812 = re.compile(r""" # Оригинальная регулярка взят
                ([^@!\ ]*)     # nick
                (?:            # then, optionally user/host
                  (?:          # but user is optional if host is given
-                   !~?([^@]*) # !user
+                   !([^@]*) # !user
                  )?           # (user was optional)
                  @([^\ ]*)    # @host
                )?             # (host was optional)
@@ -55,9 +55,12 @@ class Parse:
         self.__parsed = RFC2812.search(data)
         return bool(self.__parsed)
 
+    def __return_grp(self, grp: int):
+        return self.__parse(self.__data) and self.__parsed.group(grp) or ''
+
     @property
     def parse(self):
-        return RFC2812.search(self.__data).groups()
+        return self.__parse(self.__data) and self.__parsed.groups() or []
 
     @property
     def raw(self):
@@ -65,52 +68,31 @@ class Parse:
 
     @property
     def ident(self):
-        if self.__parse(self.__data):
-            return self.__parsed.group(1)
-        else:
-            return ''
+        return self.__return_grp(1)
 
     @property
     def nick(self):
-        if self.__parse(self.__data):
-            return self.__parsed.group(2)
-        else:
-            return ''
+        return self.__return_grp(2)
 
     @property
     def username(self):
-        if self.__parse(self.__data):
-            return self.__parsed.group(3)
-        else:
-            return ''
+        return self.__return_grp(3)
 
     @property
     def host(self):
-        if self.__parse(self.__data):
-            return self.__parsed.group(4)
-        else:
-            return ''
+        return self.__return_grp(4)
 
     @property
     def command(self):
-        if self.__parse(self.__data):
-            return self.__parsed.group(5)
-        else:
-            return ''
+        return self.__return_grp(5)
 
     @property
     def params(self):
-        if self.__parse(self.__data):
-            return self.__parsed.group(6)[1:] or ''
-        else:
-            return ''
+        return self.__return_grp(6)[1:]
 
     @property
     def content(self):
-        if self.__parse(self.__data):
-            return self.__parsed.group(7) or ''
-        else:
-            return ''
+        return self.__return_grp(7)
 
 
 class IrcConnectionError(Exception):
@@ -232,7 +214,7 @@ class Irc():
                             if msg:
                                 pretty_print(msg.strip())
                                 # если пришло
-                                if re.search('^(00[1-9]|372)$', Parse(msg).command):
+                                if re.search(r'^(00[1-9]|372)$', Parse(msg).command):
                                     # то пожалуй все хорошо
                                     pretty_print('Connection established')
                                     connected = True
@@ -263,9 +245,9 @@ class Irc():
         """
         if private is None:
             return Parse(msg).command == 'PRIVMSG'
-        elif private:
+        elif private is True:
             return Parse(msg).command == 'PRIVMSG' and Parse(msg).params == self._nick
-        else:
+        elif private is False:
             return Parse(msg).command == 'PRIVMSG' and Parse(msg).params != self._nick
 
     def is_action(self, msg: str):
@@ -297,11 +279,7 @@ class Irc():
 
     @staticmethod
     def get_nick(msg: str):
-        nick = Parse(msg).nick
-        if nick:
-            return nick
-        else:
-            return ''
+        return Parse(msg).nick
 
     @staticmethod
     def get_msg_content(msg: str):
@@ -336,7 +314,7 @@ class Irc():
             self.send(msg)
             pretty_print('Send %s to %s :%s' %
                          (command.lower(), recipient, text[start:end].strip()))
-            if sys.getsizeof(('%s %s :%s\r\n' % (command, recipient, text[end:len(text)])).encode()) > 514:
+            if sys.getsizeof(('%s %s :%s\r\n' % (command, recipient, text[end:])).encode()) > 514:
                 self._cut(command, recipient, text, end, len(text))
             else:
                 self.send('%s %s :%s' %

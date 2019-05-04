@@ -3,7 +3,7 @@ import sys
 import bot
 import time
 
-nick = 'Coxy_t'
+nick = 'Coxy'
 
 irc = kirc.Irc('Rusnet', 'irc.run.net', 9996,
                nick, 'bot', 'kupp bot', 'utf-8', ssl_enable=True)

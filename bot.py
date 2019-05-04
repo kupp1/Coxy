@@ -150,8 +150,10 @@ def delay2str(delay):
     minutes, delay = divmod(delay, 60)
     seconds = delay
     ans = ''
+
     def check_comma(a):
         return '%s,' % ans if ans else ans
+
     if days:
         ans = '%d days' % days
     if hours:
@@ -161,6 +163,7 @@ def delay2str(delay):
     if seconds:
         ans = '%s %d seconds' % (check_comma(ans), seconds)
     return ans
+
 
 def cooldown_answer(cooldowns: dict, timer: int, value: str):
     if timer != 0:  # если кулдаун 0, то и проверять нечего
