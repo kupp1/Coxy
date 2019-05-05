@@ -246,9 +246,9 @@ class Irc():
         if private is None:
             return Parse(msg).command == 'PRIVMSG'
         elif private is True:
-            return Parse(msg).command == 'PRIVMSG' and Parse(msg).params == self._nick
+            return Parse(msg).command == 'PRIVMSG' and Parse(msg).params.lower() == self._nick.lower()
         elif private is False:
-            return Parse(msg).command == 'PRIVMSG' and Parse(msg).params != self._nick
+            return Parse(msg).command == 'PRIVMSG' and Parse(msg).params.lower() != self._nick.lower()
 
     def is_action(self, msg: str):
         return Parse(msg).command == 'PRIVMSG' and self.ctcp_match.search(Parse(msg).content)
